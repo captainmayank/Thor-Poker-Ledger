@@ -71,21 +71,23 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 overflow-x-hidden">
-      <nav className="border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 bg-slate-950 z-50">
-        <div
-          className="flex items-center gap-2 cursor-pointer"
+      <nav className="border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 bg-slate-950 z-50" aria-label="Primary">
+        <button
+          type="button"
+          aria-label="Go to home"
           onClick={() => navigate('home')}
+          className="flex items-center gap-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
         >
-          <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-slate-950 font-bold">
+          <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-slate-950 font-bold" aria-hidden="true">
             ♠
           </div>
           <span className="font-bold text-xl tracking-tight">Ledger</span>
-        </div>
+        </button>
         <div className="flex items-center gap-4">
           <span className="text-slate-400 text-sm hidden sm:inline">Hi, {user.name}</span>
           <button
             onClick={handleLogout}
-            className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+            className="text-xs text-slate-500 hover:text-red-400 transition-colors px-2 py-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           >
             Logout
           </button>

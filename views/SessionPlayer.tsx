@@ -92,8 +92,9 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
           </h2>
           {!isRequesting && (
             <button
+              type="button"
               onClick={() => setIsRequesting(true)}
-              className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black rounded-2xl transition-all shadow-xl shadow-emerald-500/30 active:scale-95 flex items-center gap-2"
+              className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black rounded-2xl transition-all shadow-xl shadow-emerald-500/30 active:scale-95 flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               Add Chips
             </button>
@@ -104,15 +105,17 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
           <form onSubmit={handleRequest} className="p-6 bg-slate-950 border-2 border-emerald-500/30 rounded-3xl space-y-5 animate-in zoom-in-95 shadow-2xl">
             <div className="space-y-3">
               <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Amount to Request</label>
-                {isAdmin && <span className="text-[9px] font-black text-emerald-400 uppercase flex items-center gap-1.5"><Zap className="w-3 h-3 fill-current" /> Instant Approval</span>}
+                <label htmlFor="buyin-amount" className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Amount to Request</label>
+                {isAdmin && <span className="text-[9px] font-black text-emerald-400 uppercase flex items-center gap-1.5"><Zap className="w-3 h-3 fill-current" aria-hidden="true" /> Instant Approval</span>}
               </div>
               <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-500" />
+                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-500" aria-hidden="true" />
                 <input
+                  id="buyin-amount"
                   type="number"
                   autoFocus
-                  className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-12 pr-4 py-5 focus:ring-2 focus:ring-emerald-500 outline-none text-3xl font-black text-white"
+                  inputMode="numeric"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-12 pr-4 py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 text-3xl font-black text-white"
                   placeholder="500"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
@@ -120,8 +123,8 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
               </div>
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={() => setIsRequesting(false)} className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-black text-slate-400 uppercase">Cancel</button>
-              <button type="submit" className="flex-1 py-4 bg-emerald-500 text-slate-950 rounded-xl text-xs font-black uppercase shadow-xl shadow-emerald-500/20 active:scale-95 transition-all">
+              <button type="button" onClick={() => setIsRequesting(false)} className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-black text-slate-400 uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">Cancel</button>
+              <button type="submit" className="flex-1 py-4 bg-emerald-500 text-slate-950 rounded-xl text-xs font-black uppercase shadow-xl shadow-emerald-500/20 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
                 {isAdmin ? 'Confirm Buy-In' : 'Request Chips'}
               </button>
             </div>

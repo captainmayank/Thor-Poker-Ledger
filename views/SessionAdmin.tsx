@@ -139,15 +139,17 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Access Code:</span>
                 <span className="font-mono text-emerald-400 font-black bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 select-all">{session.sessionCode}</span>
                 <button
+                  type="button"
+                  aria-label="Copy invite link"
                   onClick={() => {
                     const link = `${window.location.origin}/#/join/${session.sessionCode}`;
                     navigator.clipboard.writeText(link);
                     alert(`Copied Invite Link: ${link}`);
                   }}
-                  className="p-1.5 bg-slate-800 hover:bg-emerald-500 text-slate-400 hover:text-slate-950 rounded transition-colors"
+                  className="p-1.5 bg-slate-800 hover:bg-emerald-500 text-slate-400 hover:text-slate-950 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                   title="Copy Invite Link"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
                 </button>
               </div>
               <div className="w-1 h-1 rounded-full bg-slate-700"></div>
@@ -174,18 +176,20 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
       {isAddingOwn && (
         <form onSubmit={handleAdminBuyIn} className="bg-emerald-500/5 border-2 border-emerald-500/20 p-6 rounded-[2rem] animate-in zoom-in-95 flex items-center gap-4">
           <div className="flex-1 relative">
-            <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
+            <label htmlFor="admin-own-amount" className="sr-only">Host buy-in amount</label>
+            <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" aria-hidden="true" />
             <input
+              id="admin-own-amount"
               type="number"
               autoFocus
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-emerald-500 outline-none font-black text-xl text-white"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 font-black text-xl text-white"
               placeholder="0.00"
               value={ownAmount}
               onChange={(e) => setOwnAmount(e.target.value)}
             />
           </div>
-          <button type="submit" className="bg-emerald-500 text-slate-950 px-8 py-4 rounded-xl font-black shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Add Stack</button>
-          <button type="button" onClick={() => setIsAddingOwn(false)} className="p-4 text-slate-500 hover:text-white transition-colors"><X className="w-6 h-6" /></button>
+          <button type="submit" className="bg-emerald-500 text-slate-950 px-8 py-4 rounded-xl font-black shadow-lg shadow-emerald-500/20 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950">Add Stack</button>
+          <button type="button" aria-label="Cancel host buy-in" onClick={() => setIsAddingOwn(false)} className="p-4 text-slate-500 hover:text-white transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"><X className="w-6 h-6" aria-hidden="true" /></button>
         </form>
       )}
 
@@ -203,33 +207,38 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
           </div>
 
           <div className="space-y-3">
-            {players.map(p => (
-              <div key={p.userId} className="flex items-center justify-between p-5 bg-slate-950 rounded-2xl border border-slate-800 focus-within:border-amber-500/50 transition-all group">
-                <div>
-                  <span className="font-black text-slate-200 block">{p.name}</span>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase">Invested: ₹{getPlayerStats(p.userId).total}</span>
+            {players.map(p => {
+              const inputId = `chip-count-${p.userId}`;
+              return (
+                <div key={p.userId} className="flex items-center justify-between p-5 bg-slate-950 rounded-2xl border border-slate-800 focus-within:border-amber-500/50 transition-all group">
+                  <div>
+                    <label htmlFor={inputId} className="font-black text-slate-200 block cursor-pointer">{p.name}</label>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase">Invested: ₹{getPlayerStats(p.userId).total}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-600 font-bold" aria-hidden="true">₹</span>
+                    <input
+                      id={inputId}
+                      type="number"
+                      aria-label={`Final chip count for ${p.name}`}
+                      className="w-32 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-right focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 font-black text-white"
+                      placeholder="0"
+                      value={finalChipCounts[p.userId] || ''}
+                      onChange={(e) => setFinalChipCounts(prev => ({ ...prev, [p.userId]: e.target.value }))}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-600 font-bold">₹</span>
-                  <input
-                    type="number"
-                    className="w-32 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-right focus:ring-2 focus:ring-amber-500 outline-none font-black text-white"
-                    placeholder="0"
-                    value={finalChipCounts[p.userId] || ''}
-                    onChange={(e) => setFinalChipCounts(prev => ({ ...prev, [p.userId]: e.target.value }))}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {error && <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs font-bold flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0" /> {error}
+          {error && <div role="alert" className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs font-bold flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" aria-hidden="true" /> {error}
           </div>}
 
           <div className="flex gap-4 pt-4">
-            <button onClick={() => setIsEnding(false)} className="flex-1 py-5 bg-slate-800 hover:bg-slate-700 rounded-2xl font-black transition-all text-white">Cancel</button>
-            <button onClick={finalizeSession} className="flex-1 py-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-2xl font-black transition-all shadow-2xl shadow-emerald-500/20">Finalize & Settle</button>
+            <button type="button" onClick={() => setIsEnding(false)} className="flex-1 py-5 bg-slate-800 hover:bg-slate-700 rounded-2xl font-black transition-all text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">Cancel</button>
+            <button type="button" onClick={finalizeSession} className="flex-1 py-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-2xl font-black transition-all shadow-2xl shadow-emerald-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">Finalize & Settle</button>
           </div>
         </div>
       ) : (
@@ -247,19 +256,22 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
                     No pending requests
                   </div>
                 ) : (
-                  pendingBuyIns.map(b => (
-                    <div key={b.id} className="group flex items-center justify-between bg-slate-900 border border-slate-800 p-6 rounded-3xl hover:border-emerald-500/30 transition-all shadow-xl animate-in slide-in-from-left-4">
-                      <div>
-                        <p className="font-black text-slate-200 text-lg">{players.find(p => p.userId === b.userId)?.name}</p>
-                        <p className="text-emerald-400 text-3xl font-black tracking-tighter mt-1">₹{b.amount}</p>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">{new Date(b.timestamp).toLocaleTimeString()}</p>
+                  pendingBuyIns.map(b => {
+                    const playerName = players.find(p => p.userId === b.userId)?.name || 'Player';
+                    return (
+                      <div key={b.id} className="group flex items-center justify-between bg-slate-900 border border-slate-800 p-6 rounded-3xl hover:border-emerald-500/30 transition-all shadow-xl animate-in slide-in-from-left-4">
+                        <div>
+                          <p className="font-black text-slate-200 text-lg">{playerName}</p>
+                          <p className="text-emerald-400 text-3xl font-black tracking-tighter mt-1">₹{b.amount}</p>
+                          <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">{new Date(b.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        <div className="flex gap-3">
+                          <button type="button" aria-label={`Reject ${playerName} buy-in of ₹${b.amount}`} onClick={() => handleReject(b.id)} className="p-4 bg-slate-800 hover:bg-rose-500 text-slate-500 hover:text-white rounded-2xl transition-all shadow-lg active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"><X className="w-6 h-6" aria-hidden="true" /></button>
+                          <button type="button" aria-label={`Approve ${playerName} buy-in of ₹${b.amount}`} onClick={() => handleApprove(b.id)} className="p-4 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 rounded-2xl transition-all shadow-lg active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"><Check className="w-6 h-6" aria-hidden="true" /></button>
+                        </div>
                       </div>
-                      <div className="flex gap-3">
-                        <button onClick={() => handleReject(b.id)} className="p-4 bg-slate-800 hover:bg-rose-500 text-slate-500 hover:text-white rounded-2xl transition-all shadow-lg active:scale-90"><X className="w-6 h-6" /></button>
-                        <button onClick={() => handleApprove(b.id)} className="p-4 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 rounded-2xl transition-all shadow-lg active:scale-90"><Check className="w-6 h-6" /></button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </section>
@@ -285,8 +297,18 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
                       return (
                         <React.Fragment key={p.userId}>
                           <tr
+                            role="button"
+                            tabIndex={0}
+                            aria-expanded={isExpanded}
+                            aria-label={`${p.name} — ${stats.history.length} transactions, ₹${stats.total} in. ${isExpanded ? 'Expanded' : 'Collapsed'}.`}
                             onClick={() => setExpandedPlayer(isExpanded ? null : p.userId)}
-                            className={`transition-all group cursor-pointer ${isExpanded ? 'bg-emerald-500/[0.03]' : 'hover:bg-slate-950/50'}`}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setExpandedPlayer(isExpanded ? null : p.userId);
+                              }
+                            }}
+                            className={`transition-all group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400/60 ${isExpanded ? 'bg-emerald-500/[0.03]' : 'hover:bg-slate-950/50'}`}
                           >
                             <td className="px-6 py-5">
                               <div className="flex items-center gap-4">
