@@ -16,12 +16,18 @@ const q = (sql, p) => pool.query(sql, p).then(r => r.rows);
 
 let BASE = null;
 async function detectBase() {
-    for (const port of [3001, 3000]) {
+    // /api/health was removed to stay under Vercel Hobby's 12-function cap.
+    // Probe /api/sessions: on a live dev-api-plugin server it returns 200 with a JSON array.
+    // On plain Vite (no plugin) it returns the .ts source as text, which won't parse as an array.
+    // Allow an override for multi-worktree setups: `BVT_PORT=3003 npm run bvt`.
+    const override = process.env.BVT_PORT;
+    const ports = override ? [Number(override)] : [3000, 3001, 3002, 3003];
+    for (const port of ports) {
         try {
-            const r = await fetch(`http://localhost:${port}/api/health`, { signal: AbortSignal.timeout(1500) });
+            const r = await fetch(`http://127.0.0.1:${port}/api/sessions`, { signal: AbortSignal.timeout(8000) });
             if (r.ok) {
-                const j = await r.json().catch(() => ({}));
-                if (j.status === 'ok') return `http://localhost:${port}`;
+                const j = await r.json().catch(() => null);
+                if (Array.isArray(j)) return `http://127.0.0.1:${port}`;
             }
         } catch { /* try next */ }
     }
@@ -211,7 +217,7 @@ async function cleanup() {
 async function main() {
     BASE = await detectBase();
     if (!BASE) {
-        console.error('Dev server not reachable on 3000 or 3001. Start it with `npm run dev` and retry.');
+        console.error('Dev server not reachable on 3000-3003. Start it with `npm run dev` (or pass BVT_PORT=<port>) and retry.');
         process.exit(1);
     }
     console.log(`BVT target: ${BASE}\n`);
