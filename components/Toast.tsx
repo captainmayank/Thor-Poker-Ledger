@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckCircle2, AlertCircle, AlertTriangle, X } from 'lucide-react';
 
@@ -55,11 +55,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'add', toast: { id, message, variant, duration } });
   }, []);
 
-  const value: ToastContextValue = {
-    success: useCallback((m, d = 3000) => push(m, 'success', d), [push]),
-    error: useCallback((m, d = 4500) => push(m, 'error', d), [push]),
-    warning: useCallback((m, d = 4000) => push(m, 'warning', d), [push]),
-  };
+  const success = useCallback((m: string, d = 3000) => push(m, 'success', d), [push]);
+  const error = useCallback((m: string, d = 4500) => push(m, 'error', d), [push]);
+  const warning = useCallback((m: string, d = 4000) => push(m, 'warning', d), [push]);
+
+  const value = useMemo<ToastContextValue>(
+    () => ({ success, error, warning }),
+    [success, error, warning]
+  );
 
   const dismiss = useCallback((id: number) => dispatch({ type: 'remove', id }), []);
 
