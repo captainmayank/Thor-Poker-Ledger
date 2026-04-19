@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Session, SessionPlayer as SessionPlayerType, BuyIn } from '../types';
 import { api } from '../services/api';
+import { aggregateTableBuyIns, tablePot as computeTablePot, potShare } from '../lib/buyIns';
 import { Clock, Wallet, CheckCircle, AlertCircle, Plus, Zap, History, DollarSign, ShieldCheck, Users } from 'lucide-react';
 
 interface SessionPlayerProps {
@@ -34,24 +35,12 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
     }
   };
 
-  const tableBuyIns = useMemo(() => {
-    const nameFor = new Map(players.map(p => [p.userId, p.name]));
-    const totals = new Map<string, number>();
-    for (const b of allBuyIns) {
-      if (b.status !== 'approved') continue;
-      totals.set(b.userId, (totals.get(b.userId) ?? 0) + b.amount);
-    }
-    return Array.from(totals.entries())
-      .map(([userId, total]) => ({
-        userId,
-        name: nameFor.get(userId) ?? 'Player',
-        total,
-        isSelf: userId === user.id,
-      }))
-      .sort((a, b) => b.total - a.total);
-  }, [allBuyIns, players, user.id]);
+  const tableBuyIns = useMemo(
+    () => aggregateTableBuyIns(allBuyIns, players, user.id),
+    [allBuyIns, players, user.id]
+  );
 
-  const tablePot = tableBuyIns.reduce((s, r) => s + r.total, 0);
+  const tablePot = computeTablePot(tableBuyIns);
 
   useEffect(() => {
     refreshData();
@@ -215,7 +204,7 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
         ) : (
           <div className="space-y-2">
             {tableBuyIns.map((row, idx) => {
-              const share = tablePot > 0 ? (row.total / tablePot) * 100 : 0;
+              const share = potShare(row.total, tablePot);
               return (
                 <div
                   key={row.userId}

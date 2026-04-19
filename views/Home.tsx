@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { User, PlayerStats, Session, SessionPLPoint } from '../types';
 import { api } from '../services/api';
+import { computeCumulative, computeScale, xFor as xForAt, yFor as yForAt } from '../lib/plChart';
 import { PlusCircle, Key, History, TrendingUp, LayoutDashboard, ChevronRight, Activity, Zap, LineChart } from 'lucide-react';
 
 interface HomeProps {
@@ -25,16 +26,10 @@ function PLChart({ points }: { points: SessionPLPoint[] }) {
   const padX = 8;
   const padY = 12;
 
-  let running = 0;
-  const cumulative = points.map(p => ({ ...p, cum: (running += p.pl) }));
-  const values = cumulative.map(p => p.cum);
-  const minV = Math.min(0, ...values);
-  const maxV = Math.max(0, ...values);
-  const span = maxV - minV || 1;
-
-  const xFor = (i: number) =>
-    cumulative.length === 1 ? W / 2 : padX + (i * (W - 2 * padX)) / (cumulative.length - 1);
-  const yFor = (v: number) => padY + (1 - (v - minV) / span) * (H - 2 * padY);
+  const cumulative = computeCumulative(points);
+  const scale = computeScale(cumulative);
+  const xFor = (i: number) => xForAt(i, cumulative.length, W, padX);
+  const yFor = (v: number) => yForAt(v, scale, H, padY);
   const zeroY = yFor(0);
 
   const linePath = cumulative
