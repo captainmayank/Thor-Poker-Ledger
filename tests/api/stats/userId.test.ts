@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const { mockQuery } = vi.hoisted(() => ({ mockQuery: vi.fn() }));
 
-vi.mock('../db.js', () => ({
+vi.mock('../../../lib/db.js', () => ({
   default: { query: mockQuery },
 }));
 
-import handler from './[userId]';
+import handler from '../../../api/stats/[userId]';
 
 type MockReq = { method: string; query: Record<string, string | undefined>; body?: any };
 type MockRes = {
