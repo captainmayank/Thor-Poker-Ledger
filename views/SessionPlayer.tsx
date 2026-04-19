@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, Session, SessionPlayer as SessionPlayerType, BuyIn } from '../types';
 import { api } from '../services/api';
-import { Clock, Wallet, CheckCircle, AlertCircle, Plus, Zap, History, DollarSign, ShieldCheck } from 'lucide-react';
+import { Clock, Wallet, CheckCircle, AlertCircle, Plus, Zap, History, DollarSign, ShieldCheck, Users } from 'lucide-react';
 
 interface SessionPlayerProps {
   user: User;
@@ -14,6 +14,7 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
   const [session, setSession] = useState<Session | null>(null);
   const [players, setPlayers] = useState<SessionPlayerType[]>([]);
   const [buyIns, setBuyIns] = useState<BuyIn[]>([]);
+  const [allBuyIns, setAllBuyIns] = useState<BuyIn[]>([]);
   const [amount, setAmount] = useState('');
   const [isRequesting, setIsRequesting] = useState(false);
 
@@ -26,11 +27,31 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
       }
       setSession(data.session);
       setPlayers(data.players);
+      setAllBuyIns(data.buyIns);
 
       const myBuyIns = data.buyIns.filter(b => b.userId === user.id).sort((a, b) => b.timestamp - a.timestamp);
       setBuyIns(myBuyIns);
     }
   };
+
+  const tableBuyIns = useMemo(() => {
+    const nameFor = new Map(players.map(p => [p.userId, p.name]));
+    const totals = new Map<string, number>();
+    for (const b of allBuyIns) {
+      if (b.status !== 'approved') continue;
+      totals.set(b.userId, (totals.get(b.userId) ?? 0) + b.amount);
+    }
+    return Array.from(totals.entries())
+      .map(([userId, total]) => ({
+        userId,
+        name: nameFor.get(userId) ?? 'Player',
+        total,
+        isSelf: userId === user.id,
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [allBuyIns, players, user.id]);
+
+  const tablePot = tableBuyIns.reduce((s, r) => s + r.total, 0);
 
   useEffect(() => {
     refreshData();
@@ -171,6 +192,59 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
             </div>
           )}
         </div>
+      </section>
+
+      <section className="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-black flex items-center gap-3">
+            <div className="w-10 h-10 bg-sky-500/10 rounded-xl flex items-center justify-center">
+              <Users className="w-5 h-5 text-sky-400" />
+            </div>
+            Table Buy-Ins
+          </h2>
+          <div className="text-right">
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Table Pot</p>
+            <p className="text-xl font-black text-sky-400 tabular-nums">₹{tablePot.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {tableBuyIns.length === 0 ? (
+          <div className="text-center py-12 bg-slate-950/50 rounded-3xl border border-slate-800/50">
+            <p className="text-slate-600 font-bold italic text-sm">No approved buy-ins at the table yet</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {tableBuyIns.map((row, idx) => {
+              const share = tablePot > 0 ? (row.total / tablePot) * 100 : 0;
+              return (
+                <div
+                  key={row.userId}
+                  className={`relative bg-slate-950 p-4 rounded-2xl border ${row.isSelf ? 'border-emerald-500/40' : 'border-slate-800'} overflow-hidden`}
+                >
+                  <div
+                    className={`absolute inset-y-0 left-0 ${row.isSelf ? 'bg-emerald-500/10' : 'bg-sky-500/5'}`}
+                    style={{ width: `${share}%` }}
+                  />
+                  <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${row.isSelf ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-white">
+                          {row.name}
+                          {row.isSelf && <span className="ml-2 text-[9px] font-black text-emerald-400 uppercase tracking-widest">You</span>}
+                        </p>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{share.toFixed(0)}% of pot</p>
+                      </div>
+                    </div>
+                    <p className="text-lg font-black text-white tabular-nums">₹{row.total.toLocaleString()}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <div className="text-center py-8 space-y-4 opacity-40">
