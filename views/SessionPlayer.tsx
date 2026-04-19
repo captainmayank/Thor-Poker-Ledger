@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Session, SessionPlayer as SessionPlayerType, BuyIn } from '../types';
 import { api } from '../services/api';
 import { Clock, Wallet, CheckCircle, AlertCircle, Plus, Zap, History, DollarSign, ShieldCheck } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface SessionPlayerProps {
   user: User;
@@ -11,6 +12,7 @@ interface SessionPlayerProps {
 }
 
 export default function SessionPlayer({ user, sessionCode, navigate }: SessionPlayerProps) {
+  const toast = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [players, setPlayers] = useState<SessionPlayerType[]>([]);
   const [buyIns, setBuyIns] = useState<BuyIn[]>([]);
@@ -41,10 +43,16 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session || !amount || parseFloat(amount) <= 0) return;
-    await api.requestBuyIn(session.id, user.id, parseFloat(amount));
-    setAmount('');
-    setIsRequesting(false);
-    refreshData();
+    const isAdmin = session.createdBy === user.id;
+    try {
+      await api.requestBuyIn(session.id, user.id, parseFloat(amount));
+      toast.success(isAdmin ? `Added ₹${amount} to your stack` : `Requested ₹${amount} — awaiting host approval`);
+      setAmount('');
+      setIsRequesting(false);
+      refreshData();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to submit buy-in request');
+    }
   };
 
   if (!session) return <div className="text-center py-20 text-slate-500 animate-pulse font-black">Connecting to Table...</div>;

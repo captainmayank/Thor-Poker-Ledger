@@ -7,6 +7,7 @@ import SessionAdmin from './views/SessionAdmin';
 import SessionPlayer from './views/SessionPlayer';
 import Settlement from './views/Settlement';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ToastProvider } from './components/Toast';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -49,7 +50,11 @@ export default function App() {
   };
 
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return (
+      <ToastProvider>
+        <Login onLogin={handleLogin} />
+      </ToastProvider>
+    );
   }
 
   const renderRoute = () => {
@@ -70,6 +75,7 @@ export default function App() {
   };
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-slate-950 text-slate-50 overflow-x-hidden">
       <nav className="border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 bg-slate-950 z-50" aria-label="Primary">
         <button
@@ -99,5 +105,6 @@ export default function App() {
         </ErrorBoundary>
       </main>
     </div>
+    </ToastProvider>
   );
 }

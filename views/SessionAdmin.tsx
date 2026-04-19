@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Session, SessionPlayer, BuyIn } from '../types';
 import { api } from '../services/api';
 import { Check, X, Users, Wallet, Trophy, Plus, DollarSign, AlertTriangle, History, ChevronDown, ChevronUp, Clock, ShieldCheck } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface SessionAdminProps {
   user: User;
@@ -11,6 +12,7 @@ interface SessionAdminProps {
 }
 
 export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdminProps) {
+  const toast = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [players, setPlayers] = useState<SessionPlayer[]>([]);
   const [buyIns, setBuyIns] = useState<BuyIn[]>([]);
@@ -59,22 +61,37 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
   }, [sessionCode]);
 
   const handleApprove = async (id: string) => {
-    await api.updateBuyInStatus(id, 'approved');
-    refreshData();
+    try {
+      await api.updateBuyInStatus(id, 'approved');
+      toast.success('Buy-in approved');
+      refreshData();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to approve buy-in');
+    }
   };
 
   const handleReject = async (id: string) => {
-    await api.updateBuyInStatus(id, 'rejected');
-    refreshData();
+    try {
+      await api.updateBuyInStatus(id, 'rejected');
+      toast.success('Buy-in rejected');
+      refreshData();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to reject buy-in');
+    }
   };
 
   const handleAdminBuyIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session || !ownAmount) return;
-    await api.requestBuyIn(session.id, user.id, parseFloat(ownAmount), 'approved');
-    setOwnAmount('');
-    setIsAddingOwn(false);
-    refreshData();
+    try {
+      await api.requestBuyIn(session.id, user.id, parseFloat(ownAmount), 'approved');
+      toast.success(`Added ₹${ownAmount} to your stack`);
+      setOwnAmount('');
+      setIsAddingOwn(false);
+      refreshData();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to add buy-in');
+    }
   };
 
   const getPlayerStats = (userId: string) => {
@@ -86,23 +103,31 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
 
   const finalizeSession = async () => {
     if (!session) return;
+    setError('');
     let totalWinnings = 0;
     const approvedBuyIns = buyIns.filter(b => b.status === 'approved');
     const totalBuyInPool = approvedBuyIns.reduce((sum, b) => sum + b.amount, 0);
 
-    for (const player of players) {
-      const val = parseFloat(finalChipCounts[player.userId] || '0');
-      totalWinnings += val;
-      await api.settlePlayer(session.id, player.userId, val);
-    }
+    try {
+      for (const player of players) {
+        const val = parseFloat(finalChipCounts[player.userId] || '0');
+        totalWinnings += val;
+        await api.settlePlayer(session.id, player.userId, val);
+      }
 
-    if (Math.abs(totalWinnings - totalBuyInPool) > 0.1) {
-      setError(`Audit Failed: Chips Out (₹${totalWinnings}) ≠ Pool (₹${totalBuyInPool}).`);
-      return;
-    }
+      if (Math.abs(totalWinnings - totalBuyInPool) > 0.1) {
+        const msg = `Audit Failed: Chips Out (₹${totalWinnings}) ≠ Pool (₹${totalBuyInPool}).`;
+        setError(msg);
+        toast.warning('Chip count does not match pool — please re-check');
+        return;
+      }
 
-    await api.updateSessionStatus(session.id, 'closed');
-    navigate(`settlement/${session.id}`);
+      await api.updateSessionStatus(session.id, 'closed');
+      toast.success('Session settled');
+      navigate(`settlement/${session.id}`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to finalize session');
+    }
   };
 
   if (!session) {
@@ -141,10 +166,14 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
                 <button
                   type="button"
                   aria-label="Copy invite link"
-                  onClick={() => {
+                  onClick={async () => {
                     const link = `${window.location.origin}/#/join/${session.sessionCode}`;
-                    navigator.clipboard.writeText(link);
-                    alert(`Copied Invite Link: ${link}`);
+                    try {
+                      await navigator.clipboard.writeText(link);
+                      toast.success('Invite link copied to clipboard');
+                    } catch {
+                      toast.error('Clipboard unavailable — copy the access code manually');
+                    }
                   }}
                   className="p-1.5 bg-slate-800 hover:bg-emerald-500 text-slate-400 hover:text-slate-950 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                   title="Copy Invite Link"
