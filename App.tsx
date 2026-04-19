@@ -77,7 +77,7 @@ export default function App() {
   return (
     <ToastProvider>
     <div className="min-h-screen bg-slate-950 text-slate-50 overflow-x-hidden">
-      <nav className="border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 bg-slate-950 z-50" aria-label="Primary">
+      <nav className="border-b border-slate-800 px-4 pt-safe pb-3 flex justify-between items-center sticky top-0 bg-slate-950 z-50" aria-label="Primary">
         <button
           type="button"
           aria-label="Go to home"
@@ -93,13 +93,13 @@ export default function App() {
           <span className="text-slate-400 text-sm hidden sm:inline">Hi, {user.name}</span>
           <button
             onClick={handleLogout}
-            className="text-xs text-slate-500 hover:text-red-400 transition-colors px-2 py-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            className="text-xs font-bold text-slate-500 hover:text-red-400 transition-colors px-3 py-2 min-h-[36px] rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           >
             Logout
           </button>
         </div>
       </nav>
-      <main className="container mx-auto max-w-2xl px-4 py-6">
+      <main className="container mx-auto max-w-2xl px-4 py-6 pb-safe">
         <ErrorBoundary>
           {renderRoute()}
         </ErrorBoundary>

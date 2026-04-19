@@ -240,7 +240,7 @@ export default function Home({ user, navigate, initialCode }: HomeProps) {
                   inputMode="text"
                   autoComplete="off"
                   aria-label="Table access code, 6 characters"
-                  className="w-full bg-black/40 border-2 border-white/5 rounded-3xl px-6 py-8 focus:border-amber-500/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 transition-all uppercase font-mono tracking-[0.6em] text-4xl text-center text-amber-400 placeholder:text-slate-900"
+                  className="w-full bg-black/40 border-2 border-white/5 rounded-3xl px-3 sm:px-6 py-7 sm:py-8 focus:border-amber-500/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 transition-all uppercase font-mono tracking-[0.3em] sm:tracking-[0.6em] text-3xl sm:text-4xl text-center text-amber-400 placeholder:text-slate-900"
                   placeholder="••••••"
                   maxLength={6}
                   value={joinCode}
