@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, Session, SessionPlayer, BuyIn } from '../types';
 import { api } from '../services/api';
-import { Check, X, Users, Wallet, Trophy, Plus, DollarSign, AlertTriangle, History, ChevronDown, ChevronUp, Clock, ShieldCheck } from 'lucide-react';
+import { Check, X, Users, Wallet, Trophy, Plus, DollarSign, AlertTriangle, History, ChevronDown, ChevronUp, Clock, ShieldCheck, Inbox } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import EmptyState from '../components/EmptyState';
 
 interface SessionAdminProps {
   user: User;
@@ -280,10 +281,11 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
               </h2>
               <div className="space-y-3">
                 {pendingBuyIns.length === 0 ? (
-                  <div className="text-center py-16 bg-slate-900/30 rounded-[2rem] border-2 border-dashed border-slate-800/50 text-slate-600 font-bold italic flex flex-col items-center gap-2">
-                    <ShieldCheck className="w-8 h-8 opacity-20" />
-                    No pending requests
-                  </div>
+                  <EmptyState
+                    icon={ShieldCheck}
+                    title="Approval queue is clear"
+                    subtitle="New buy-in requests from players will appear here for review."
+                  />
                 ) : (
                   pendingBuyIns.map(b => {
                     const playerName = players.find(p => p.userId === b.userId)?.name || 'Player';
@@ -408,10 +410,11 @@ export default function SessionAdmin({ user, sessionCode, navigate }: SessionAdm
             </div>
             <div className="bg-slate-900/50 rounded-[2rem] border border-slate-800 p-2 max-h-80 overflow-y-auto custom-scrollbar shadow-inner">
               {buyIns.length === 0 ? (
-                <div className="py-20 text-center text-slate-700 text-[10px] font-black uppercase tracking-widest flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-full border border-slate-800 flex items-center justify-center opacity-20">♠</div>
-                  Feed Ready
-                </div>
+                <EmptyState
+                  icon={Inbox}
+                  title="Feed ready"
+                  subtitle="Buy-in activity across every player will stream in here as it happens."
+                />
               ) : (
                 buyIns.map((b, idx) => {
                   const player = players.find(p => p.userId === b.userId);

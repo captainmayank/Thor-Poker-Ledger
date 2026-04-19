@@ -2,7 +2,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { User, PlayerStats, Session } from '../types';
 import { api } from '../services/api';
-import { PlusCircle, Key, History, TrendingUp, LayoutDashboard, ChevronRight, Activity, Zap } from 'lucide-react';
+import { PlusCircle, Key, History, TrendingUp, LayoutDashboard, ChevronRight, Activity, Zap, CloudOff } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 
 interface HomeProps {
   user: User;
@@ -143,10 +144,12 @@ export default function Home({ user, navigate, initialCode }: HomeProps) {
               </h2>
             </div>
             {history.length === 0 ? (
-              <div className="glass rounded-3xl py-16 text-center">
-                <p className="text-slate-500 font-bold mb-4">No active seats found.</p>
-                <button onClick={() => setActiveTab('create')} className="px-6 py-2 bg-emerald-500/10 text-emerald-400 rounded-full text-xs font-black border border-emerald-500/20 hover:bg-emerald-500 hover:text-slate-950 transition-all">Start a Game</button>
-              </div>
+              <EmptyState
+                icon={CloudOff}
+                title="No seats at this table yet"
+                subtitle="Host a new room or enter a 6-digit code to join a friend's table."
+                action={{ label: 'Start a Game', onClick: () => setActiveTab('create'), tone: 'emerald' }}
+              />
             ) : (
               <ul className="space-y-3">
                 {history.map(s => (

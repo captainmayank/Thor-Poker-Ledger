@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, Session, SessionPlayer as SessionPlayerType, BuyIn } from '../types';
 import { api } from '../services/api';
-import { Clock, Wallet, CheckCircle, AlertCircle, Plus, Zap, History, DollarSign, ShieldCheck } from 'lucide-react';
+import { Clock, Wallet, CheckCircle, AlertCircle, Plus, Zap, History, DollarSign, ShieldCheck, Receipt } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import EmptyState from '../components/EmptyState';
 
 interface SessionPlayerProps {
   user: User;
@@ -146,9 +147,11 @@ export default function SessionPlayer({ user, sessionCode, navigate }: SessionPl
           </div>
 
           {buyIns.length === 0 ? (
-            <div className="text-center py-20 bg-slate-950/50 rounded-3xl border border-slate-800/50">
-              <p className="text-slate-600 font-bold italic text-sm">No chip history found</p>
-            </div>
+            <EmptyState
+              icon={Receipt}
+              title="No chips in play yet"
+              subtitle={isAdmin ? 'Approve your first buy-in above to seed the pot.' : 'Request chips above — the host will approve and your balance will appear here.'}
+            />
           ) : (
             <div className="space-y-3">
               {buyIns.map(b => (
